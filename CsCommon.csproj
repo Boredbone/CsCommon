@@ -80,11 +80,33 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utility\Extensions\ConcurrentExtensions.cs" />
+    <Compile Include="Utility\Extensions\EnumelableExtensions.cs" />
+    <Compile Include="Utility\Extensions\MathExtensions.cs" />
+    <Compile Include="Utility\Extensions\ObservableHelperExtensions.cs" />
+    <Compile Include="Utility\Extensions\StringExtensions.cs" />
+    <Compile Include="Utility\Extensions\TaskExtensions.cs" />
+    <Compile Include="Utility\Notification\DisposableBase.cs" />
+    <Compile Include="Utility\Notification\History.cs" />
+    <Compile Include="Utility\Notification\NotificationBase.cs" />
+    <Compile Include="Utility\Tools\AsyncLock.cs" />
+    <Compile Include="Utility\Tools\BinaryHelper.cs" />
+    <Compile Include="Utility\Tools\Directions.cs" />
+    <Compile Include="Utility\Tools\FileSizeConverter.cs" />
+    <Compile Include="Utility\Tools\FolderWatcher.cs" />
+    <Compile Include="Utility\Tools\GraphicInformation.cs" />
+    <Compile Include="Utility\Tools\NumberProvider.cs" />
+    <Compile Include="Utility\Tools\ObservableSet.cs" />
+    <Compile Include="Utility\Tools\PathUtility.cs" />
+    <Compile Include="Utility\Tools\ResourceString.cs" />
+    <Compile Include="Utility\Tools\SequenceNumber.cs" />
+    <Compile Include="Utility\Tools\TextLoader.cs" />
+    <Compile Include="Utility\Tools\ThreeState.cs" />
+    <Compile Include="Utility\Tools\XmlSettingManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <Import Project="..\Utility\Utility.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
