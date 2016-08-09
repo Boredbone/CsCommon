@@ -5,6 +5,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Reactive.Bindings;
 using System.Reactive.Subjects;
+using System.Reactive.Concurrency;
 
 namespace Boredbone.Utility.Extensions
 {
@@ -62,7 +63,7 @@ namespace Boredbone.Utility.Extensions
                 return subscriptions;
             });
         }
-
+        /*
         /// <summary>
         /// Throttleした値と、Throttle後に初めてきた値を流す
         /// </summary>
@@ -98,6 +99,68 @@ namespace Boredbone.Utility.Extensions
                 this.Value = value;
                 this.Flag = flag;
             }
+        }*/
+
+        public static IObservable<T> Restrict<T>(this IObservable<T> source, TimeSpan interval)
+        {
+            return source.Restrict(interval, Scheduler.Default);
+        }
+
+        public static IObservable<T> Restrict<T>(this IObservable<T> source, TimeSpan interval, IScheduler scheduler)
+        {
+            object _gate = new object();
+            T _value = default(T);
+            bool _hasValue = false;
+            SerialDisposable _cancelable = new SerialDisposable();
+            ulong lastId = 0UL;
+
+            return Observable.Create<T>(observer =>
+            {
+                return source.Subscribe(value =>
+                {
+
+                    var currentid = default(ulong);
+
+                    lock (_gate)
+                    {
+                        var isIdle = !_hasValue;
+
+                        _hasValue = true;
+                        _value = value;
+
+                        if (isIdle)
+                        {
+                            currentid = lastId;
+                            lastId = unchecked(lastId + 1);
+                            observer.OnNext(_value);
+                        }
+                        else
+                        {
+                            lastId = unchecked(lastId + 1);
+                            currentid = lastId;
+                        }
+                    }
+
+                    var d = new SingleAssignmentDisposable();
+                    _cancelable.Disposable = d;
+
+                    d.Disposable = scheduler.Schedule(currentid, interval, (IScheduler self, ulong id) =>
+                    {
+                        lock (_gate)
+                        {
+                            if (_hasValue && lastId == id)
+                            {
+                                observer.OnNext(_value);
+                            }
+                            _hasValue = false;
+                        }
+
+                        return Disposable.Empty;
+                    });
+
+                });
+            });
+
         }
 
         public static ReactiveCommand<Tvalue> WithSubscribe<Tvalue>
