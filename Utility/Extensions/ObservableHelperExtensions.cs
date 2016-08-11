@@ -177,6 +177,13 @@ namespace Boredbone.Utility.Extensions
             observable.AddTo(container);
             return observable;
         }
+        public static ReactiveCommand WithSubscribeOfType<T>
+            (this ReactiveCommand observable, Action<T> action, ICollection<IDisposable> container)
+        {
+            observable.OfType<T>().Subscribe(action).AddTo(container);
+            observable.AddTo(container);
+            return observable;
+        }
         public static Subject<Tvalue> WithSubscribe<Tvalue>
             (this Subject<Tvalue> observable, Action<Tvalue> action, ICollection<IDisposable> container)
         {
