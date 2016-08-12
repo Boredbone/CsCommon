@@ -19,24 +19,24 @@ namespace Boredbone.Utility
     /// <typeparam name="T"></typeparam>
     public class XmlSettingManager<T> where T : class, new()
     {
-        static readonly string backUpNameHeader = "backup_";
-        private string fileName;
+        private static readonly string backUpNameHeader = "backup_";
+        private string filePath;
 
-#if WINDOWS_APP || WINDOWS_UWP
-        
-#else
-        public string Directory { get; set; }
-        private string BasePath
-            => (this.Directory == null || this.Directory.Length <= 0) ? "" : this.Directory + @"\";
-#endif
+        //#if WINDOWS_APP || WINDOWS_UWP
+        //        
+        //#else
+        //        public string Directory { get; set; }
+        //        private string BasePath
+        //            => (this.Directory == null || this.Directory.Length <= 0) ? "" : this.Directory + @"\";
+        //#endif
 
         /// <summary>
         /// 保存するファイル名を指定してインスタンスを初期化
         /// </summary>
-        /// <param name="fileName">xmlファイル名</param>
-        public XmlSettingManager(string fileName)
+        /// <param name="filePath">xmlファイル名</param>
+        public XmlSettingManager(string filePath)
         {
-            this.fileName = fileName;
+            this.filePath = filePath;
         }
 
         /// <summary>
@@ -64,26 +64,27 @@ namespace Boredbone.Utility
             try
             {
 
+                var setting = new XmlWriterSettings
+                {
+                    Indent = true,
+                    Encoding = new System.Text.UTF8Encoding(false)
+                };
+
 #if WINDOWS_APP || WINDOWS_UWP
 
                 //アプリ固有のフォルダにファイルを生成
                 var folder = ApplicationData.Current.LocalFolder;
 
                 var file = await folder.CreateFileAsync
-                    (fileName, CreationCollisionOption.ReplaceExisting);
+                    (this.GetFileName(), CreationCollisionOption.ReplaceExisting);
 
                 //ファイルストリームからライターを生成
                 using (var stream = await file.OpenStreamForWriteAsync())
-                using (var xw = XmlWriter.Create(stream,
+                using (var xw = XmlWriter.Create(stream, setting))
 #else
                 //ライターを生成
-                using (var xw = XmlWriter.Create(this.BasePath + this.fileName,
+                using (var xw = XmlWriter.Create(this.filePath, setting))
 #endif
-                    new XmlWriterSettings
-                    {
-                        Indent = true,
-                        Encoding = new System.Text.UTF8Encoding(false)
-                    }))
                 {
                     //シリアライズして保存
                     var serializer = new DataContractSerializer(typeof(T));
@@ -92,7 +93,7 @@ namespace Boredbone.Utility
                 }
 
             }
-            catch(Exception)
+            catch (Exception)
             {
                 //例外はそのまま投げる
                 throw;
@@ -136,7 +137,7 @@ namespace Boredbone.Utility
         public LoadedObjectContainer<T> LoadXml(XmlLoadingOptions options)
 #endif
         {
-            
+
 
             Exception errorMessage = null;
 
@@ -146,11 +147,11 @@ namespace Boredbone.Utility
 #if WINDOWS_APP || WINDOWS_UWP
                 var folder = ApplicationData.Current.LocalFolder;
 
-                var file = await folder.GetFileAsync(this.fileName);
+                var file = await folder.GetFileAsync(this.GetFileName());
 
                 var loaded = await this.LoadMainAsync(folder, file);
 #else
-                var loaded = this.LoadMain(this.BasePath + this.fileName);
+                var loaded = this.LoadMain(this.filePath);
 #endif
 
                 //自動バックアップを使用する場合、正常に読み込めたファイルを別名でコピー
@@ -160,10 +161,9 @@ namespace Boredbone.Utility
                     {
 #if WINDOWS_APP || WINDOWS_UWP
                         var copied = await file.CopyAsync
-                            (folder, backUpNameHeader + this.fileName, NameCollisionOption.ReplaceExisting);
+                            (folder, this.GetBackupFileName(), NameCollisionOption.ReplaceExisting);
 #else
-                        File.Copy(this.BasePath + this.fileName, 
-                            this.BasePath + backUpNameHeader + this.fileName, true);
+                        File.Copy(this.filePath, this.GetBackupFilePath(), true);
 #endif
                     }
                     catch (Exception e)
@@ -171,7 +171,7 @@ namespace Boredbone.Utility
                         return new LoadedObjectContainer<T>(loaded, e);
                     }
                 }
-                
+
                 //コンテナに入れて返す
                 return new LoadedObjectContainer<T>(loaded, null);
             }
@@ -227,7 +227,7 @@ namespace Boredbone.Utility
 #else
             return this.LoadBackupMain(options, errorMessage);
 #endif
-            
+
         }
 
         /// <summary>
@@ -244,7 +244,7 @@ namespace Boredbone.Utility
         public LoadedObjectContainer<T> LoadBackupXml(XmlLoadingOptions options)
         {
             return this.LoadBackupMain(options, null);
-        
+
         }
 #endif
 
@@ -262,11 +262,11 @@ namespace Boredbone.Utility
 #if WINDOWS_APP || WINDOWS_UWP
                 var folder = ApplicationData.Current.LocalFolder;
 
-                var file = await folder.GetFileAsync(backUpNameHeader + fileName);
+                var file = await folder.GetFileAsync(this.GetBackupFileName());
 
                 var loaded = await this.LoadMainAsync(folder, file);
 #else
-                var loaded = this.LoadMain(this.BasePath + backUpNameHeader + fileName);
+                var loaded = this.LoadMain(this.GetBackupFilePath());
 #endif
 
                 return new LoadedObjectContainer<T>(loaded, errorMessage);
@@ -335,7 +335,7 @@ namespace Boredbone.Utility
             try
             {
                 var folder = ApplicationData.Current.LocalFolder;
-                var file = await folder.GetFileAsync(fileName);
+                var file = await folder.GetFileAsync(this.GetFileName());
                 if (file != null)
                 {
                     await file.DeleteAsync();
@@ -354,6 +354,22 @@ namespace Boredbone.Utility
 #endif
 
 
+
+#if WINDOWS_APP || WINDOWS_UWP
+
+        private string GetFileName() => Path.GetFileName(this.filePath);
+
+        private string GetBackupFileName() => backUpNameHeader + this.GetFileName();
+#else
+        private string GetBackupFilePath()
+        {
+            var dir = Path.GetDirectoryName(this.filePath);
+            var name = Path.GetFileName(this.filePath);
+
+            return Path.Combine(dir, backUpNameHeader + name);
+        }
+
+#endif
 
     }
 
