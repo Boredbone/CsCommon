@@ -78,9 +78,6 @@ namespace Boredbone.Utility.Extensions
             }
 
             return dictionary;
-
-            //return new ConcurrentDictionary<TKey, TValue>(first.Concat(second).Where(x => x.Value != null));
-            //.ToDictionary(x => x.Key, x => x.Value);
         }
 
         /// <summary>
@@ -117,20 +114,6 @@ namespace Boredbone.Utility.Extensions
             }
             return null;
         }
-
-
-
-        ///// <summary>
-        ///// 2つのシーケンスを連結
-        ///// </summary>
-        ///// <typeparam name="T"></typeparam>
-        ///// <param name="first"></param>
-        ///// <param name="second"></param>
-        ///// <returns></returns>
-        //public static IEnumerable<T> Concat<T>(this IEnumerable<T> first, params T[] second)
-        //{
-        //    return Enumerable.Concat(first, second);
-        //}
 
 
         /// <summary>
@@ -200,9 +183,6 @@ namespace Boredbone.Utility.Extensions
         {
             source.Absorb(reference, match, converter);
             return source.FilterStrictlyBy(reference, match);
-
-            //source.FilterBy(reference, match);
-            //source.AbsorbStrictly(reference, match, converter);
         }
 
         /// <summary>
@@ -592,18 +572,6 @@ namespace Boredbone.Utility.Extensions
 
         }
 
-        //private struct ValueTuple<T1, T2>
-        //{
-        //    public T1 Item1 { get; }
-        //    public T2 Item2 { get; }
-        //
-        //    public ValueTuple(T1 item1,T2 item2)
-        //    {
-        //        this.Item1 = item1;
-        //        this.Item2 = item2;
-        //    }
-        //
-        //}
 
         /// <summary>
         /// インデックスが配列の範囲内かどうか調べる
@@ -730,15 +698,6 @@ namespace Boredbone.Utility.Extensions
             if (sequence == null) throw new ArgumentNullException("sequence");
 
             return Enumerable.Concat(sequence, toAppend);
-            /*
-            foreach (T item in sequence)
-            {
-                yield return item;
-            }
-            foreach (T item in toAppend)
-            {
-                yield return item;
-            }*/
         }
 
         public static IEnumerable<T> Prepend<T>(this IEnumerable<T> sequence, params T[] toPrepend)
@@ -746,17 +705,6 @@ namespace Boredbone.Utility.Extensions
             if (sequence == null) throw new ArgumentNullException("sequence");
 
             return Enumerable.Concat(toPrepend, sequence);
-            /*
-            foreach (T item in toPrepend)
-            {
-                yield return item;
-            }
-            foreach (T item in sequence)
-            {
-                yield return item;
-            }*/
         }
-
-
     }
 }

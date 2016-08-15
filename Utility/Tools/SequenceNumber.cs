@@ -22,7 +22,6 @@ namespace Boredbone.Utility
 
         public SequenceNumber(string str)
         {
-            //var sname = Path.GetFileNameWithoutExtension(str);
             extension = Path.GetExtension(str);
             var name = str.Substring(0, str.Length - extension.Length);
 
@@ -44,7 +43,6 @@ namespace Boredbone.Utility
 
             if (sp.Length > 2)
             {
-                //postName = string.Join("", Enumerable.Range(1, sp.Length - 1).Select(x => sp[x]));
                 postName = string.Join("", sp.Skip(1));
             }
             else if (sp.Length > 1)

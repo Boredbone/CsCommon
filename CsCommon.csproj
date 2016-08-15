@@ -100,7 +100,6 @@
     <Compile Include="Utility\Tools\NumberProvider.cs" />
     <Compile Include="Utility\Tools\ObservableSet.cs" />
     <Compile Include="Utility\Tools\PathUtility.cs" />
-    <Compile Include="Utility\Tools\ResourceString.cs" />
     <Compile Include="Utility\Tools\SequenceNumber.cs" />
     <Compile Include="Utility\Tools\TextLoader.cs" />
     <Compile Include="Utility\Tools\ThreeState.cs" />

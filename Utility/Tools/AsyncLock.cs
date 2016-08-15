@@ -8,7 +8,7 @@ namespace Boredbone.Utility
 {
     public sealed class AsyncLock
     {
-        private readonly SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim semaphore;
 
         private readonly Task<IDisposable> releaser;
         public bool IsLocked { get; private set; }

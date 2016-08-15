@@ -63,43 +63,6 @@ namespace Boredbone.Utility.Extensions
                 return subscriptions;
             });
         }
-        /*
-        /// <summary>
-        /// Throttleした値と、Throttle後に初めてきた値を流す
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="source"></param>
-        /// <param name="interval"></param>
-        /// <returns></returns>
-        public static IObservable<T> Restrict<T>(this IObservable<T> source, TimeSpan interval)
-        {
-            var seq = source
-                .Throttle(interval)
-                .Select(x => new FlaggedItem<T>(x, true))
-                .Merge(source.Select(x => new FlaggedItem<T>(x, false)))
-                .Publish()
-                .RefCount();
-
-            return seq
-                .Zip(seq.Skip(1), (Z2, Z1) => new { Z2, Z1 })
-                .Zip(seq.Skip(2), (a, b) => new { Value = b.Value, Z0 = b.Flag, Z1 = a.Z1.Flag, Z2 = a.Z2.Flag })
-                //.Do(x => Debug.WriteLine($"{x.Value},{x.Z0},{x.Z1},{x.Z2}"))
-                .Where(x => x.Z1 || (x.Z0 && !x.Z2))
-                .Select(x => x.Value)
-                .Merge(source.Take(2));
-        }
-
-        private class FlaggedItem<T>
-        {
-            public bool Flag { get; set; }
-            public T Value { get; }
-
-            public FlaggedItem(T value, bool flag)
-            {
-                this.Value = value;
-                this.Flag = flag;
-            }
-        }*/
 
         public static IObservable<T> Restrict<T>(this IObservable<T> source, TimeSpan interval)
         {
@@ -219,9 +182,6 @@ namespace Boredbone.Utility.Extensions
             (this IObservable<T> source, double timeMilliseconds)
         {
             return source.BufferUntilThrottle(timeMilliseconds, true);
-            //return source
-            //    .Buffer(source.Throttle(TimeSpan.FromMilliseconds(timeMilliseconds)))
-            //    .Where(x => x.Count > 0);
         }
         public static IObservable<IList<T>> BufferUntilThrottle<T>
             (this IObservable<T> source, double timeMilliseconds, bool publish)
@@ -231,14 +191,8 @@ namespace Boredbone.Utility.Extensions
             if (publish)
             {
                 observable = source.Publish().RefCount();
-
-                //return source
-                //    .Buffer(source.Throttle(TimeSpan.FromMilliseconds(timeMilliseconds)))
-                //    .Where(x => x.Count > 0);
             }
-
-            //var s2 = source.Publish().RefCount();
-
+            
             return observable
                 .Buffer(observable.Throttle(TimeSpan.FromMilliseconds(timeMilliseconds)))
                 .Where(x => x.Count > 0);

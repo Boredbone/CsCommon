@@ -43,20 +43,17 @@ namespace Boredbone.Utility
                 if (this._fieldLength != value)
                 {
                     this._fieldLength = value;
-                    //this.RefreshRandomSequence();
                 }
             }
         }
 
-        public NumberProvider(int length,int initialNumber)
+        public NumberProvider(int length, int initialNumber)
         {
             this.Number = initialNumber;
             this.Length = length;
         }
         public NumberProvider(int length) : this(length, 0)
         {
-            //this.Number = 0;
-            //this.Length = length;
         }
 
         public int GetNumber(int index)
@@ -69,7 +66,6 @@ namespace Boredbone.Utility
             if (this.History == null)
             {
                 this.History = Enumerable.Range(this.Number, index).ToList();
-                //this.History[this.History.Count - 1] = this.Number;
             }
 
             while (index >= this.History.Count)
@@ -77,12 +73,6 @@ namespace Boredbone.Utility
                 var number = this.GenerateNextNumber();
                 this.History.Add(number);
             }
-            //if (index >= this.History.Count)
-            //{
-            //    var number = this.GenerateNextNumber();
-            //    this.History.Add(number);
-            //    return number;
-            //}
             return this.History[index];
         }
 
