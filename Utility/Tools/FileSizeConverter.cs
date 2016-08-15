@@ -8,13 +8,8 @@ namespace Boredbone.Utility
 {
     public static class FileSizeConverter
     {
-        //private const int shift = 10;
         private const double threshold = 1024;
-
-        //public string ConvertFrom(ulong size)
-        //{
-        //    return ConvertFrom(size, 1024);
-        //}
+        
 
         public static string ConvertFrom(double size)
         {
@@ -42,11 +37,7 @@ namespace Boredbone.Utility
         {
             string[] suffix = { "", "K", "M", "G", "T", "P", "E", "Z", "Y" };
             int index = 0;
-
-            //if (size < 1000)
-            //{
-            //    return string.Format("{0} B", size.ToString("#,##0"));
-            //}
+            
 
             while (size >= 1000)
             {

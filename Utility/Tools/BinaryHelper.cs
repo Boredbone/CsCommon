@@ -13,39 +13,34 @@ namespace Boredbone.Utility
     public class BinaryHelper
     {
 
-
         /// <summary>
-        /// Write Double value as Big-endian
+        /// Write Double value
         /// </summary>
         /// <param name="stream"></param>
         /// <param name="value"></param>
         public static void WriteDouble(FileStream stream, double value, bool isBigEndian)
         {
-
             var byteArray = BitConverter.GetBytes(value);
-
-            //Big endian
+            
             stream.Write((BitConverter.IsLittleEndian ^ isBigEndian) ? byteArray : byteArray.Reverse().ToArray(),
                 0, byteArray.Length);
         }
 
         /// <summary>
-        /// Write Int32 value as Big-endian
+        /// Write Int32 value
         /// </summary>
         /// <param name="stream"></param>
         /// <param name="value"></param>
         public static void WriteInt32(FileStream stream, int value, bool isBigEndian)
         {
-
             var byteArray = BitConverter.GetBytes(value);
-
-            //Big endian
+            
             stream.Write((BitConverter.IsLittleEndian ^ isBigEndian) ? byteArray : byteArray.Reverse().ToArray(),
                 0, byteArray.Length);
         }
 
         /// <summary>
-        /// Read Double value as Big-endian
+        /// Read Double value
         /// </summary>
         /// <param name="stream"></param>
         /// <returns></returns>
@@ -63,7 +58,7 @@ namespace Boredbone.Utility
 
 
         /// <summary>
-        /// Read Int32 value as Big-endian
+        /// Read Int32 value
         /// </summary>
         /// <param name="stream"></param>
         /// <returns></returns>
