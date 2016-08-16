@@ -97,6 +97,7 @@
     <Compile Include="Utility\Tools\FileSizeConverter.cs" />
     <Compile Include="Utility\Tools\FolderWatcher.cs" />
     <Compile Include="Utility\Tools\GraphicInformation.cs" />
+    <Compile Include="Utility\Tools\Indexed.cs" />
     <Compile Include="Utility\Tools\NumberProvider.cs" />
     <Compile Include="Utility\Tools\ObservableSet.cs" />
     <Compile Include="Utility\Tools\PathUtility.cs" />
