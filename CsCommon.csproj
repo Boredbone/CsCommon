@@ -104,6 +104,7 @@
     <Compile Include="Utility\Tools\SequenceNumber.cs" />
     <Compile Include="Utility\Tools\TextLoader.cs" />
     <Compile Include="Utility\Tools\ThreeState.cs" />
+    <Compile Include="Utility\Tools\WrappingStream .cs" />
     <Compile Include="Utility\Tools\XmlSettingManager.cs" />
   </ItemGroup>
   <ItemGroup>
