@@ -10,7 +10,7 @@ namespace Boredbone.Utility.Tools
 #if !WINDOWS_APP && !WINDOWS_UWP
     public class ShellFileOperation
     {
-        public static int DeleteFiles(bool showDialog, IntPtr windowHandle, params string[] files)
+        public static int DeleteFiles(bool showDialog, IntPtr? windowHandle, params string[] files)
         {
             var fixedFiles = files
                 .Where(x => !string.IsNullOrWhiteSpace(x))
@@ -21,10 +21,10 @@ namespace Boredbone.Utility.Tools
 
 
             var flags = Native.FOFlags.FOF_ALLOWUNDO
-                | (showDialog ? 0 : Native.FOFlags.FOF_NOCONFIRMATION);
+                | (showDialog ? Native.FOFlags.FOF_WANTNUKEWARNING : Native.FOFlags.FOF_NOCONFIRMATION);
 
             Native.SHFILEOPSTRUCT sh = new Native.SHFILEOPSTRUCT();
-            sh.hwnd = windowHandle;// IntPtr.Zero;
+            sh.hwnd = windowHandle ?? IntPtr.Zero;
             sh.wFunc = Native.FOFunc.FO_DELETE;
             sh.pFrom = path;
             sh.pTo = null;
