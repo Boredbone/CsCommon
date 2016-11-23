@@ -88,6 +88,9 @@
     <Compile Include="Utility\Extensions\ObservableHelperExtensions.cs" />
     <Compile Include="Utility\Extensions\StringExtensions.cs" />
     <Compile Include="Utility\Extensions\TaskExtensions.cs" />
+    <Compile Include="Utility\LockingCollection\LockingDictionary.cs" />
+    <Compile Include="Utility\LockingCollection\LockingList.cs" />
+    <Compile Include="Utility\LockingCollection\LockingQueue.cs" />
     <Compile Include="Utility\Notification\DisposableBase.cs" />
     <Compile Include="Utility\Notification\History.cs" />
     <Compile Include="Utility\Notification\NotificationBase.cs" />
