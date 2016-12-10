@@ -83,6 +83,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utility\Extensions\ConcurrentExtensions.cs" />
+    <Compile Include="Utility\Extensions\DictionaryExtensions.cs" />
     <Compile Include="Utility\Extensions\EnumelableExtensions.cs" />
     <Compile Include="Utility\Extensions\MathExtensions.cs" />
     <Compile Include="Utility\Extensions\ObservableHelperExtensions.cs" />
@@ -108,6 +109,7 @@
     <Compile Include="Utility\Tools\ShellFileOperation.cs" />
     <Compile Include="Utility\Tools\TextLoader.cs" />
     <Compile Include="Utility\Tools\ThreeState.cs" />
+    <Compile Include="Utility\Tools\UnixTime.cs" />
     <Compile Include="Utility\Tools\WrappingStream .cs" />
     <Compile Include="Utility\Tools\XmlSettingManager.cs" />
   </ItemGroup>
