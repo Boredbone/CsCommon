@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;NET45</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -26,7 +26,7 @@
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;NET45</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>false</UseVSHostingProcess>
@@ -83,16 +83,21 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utility\Extensions\ConcurrentExtensions.cs" />
+    <Compile Include="Utility\Extensions\DictionaryExtensions.cs" />
     <Compile Include="Utility\Extensions\EnumelableExtensions.cs" />
     <Compile Include="Utility\Extensions\MathExtensions.cs" />
     <Compile Include="Utility\Extensions\ObservableHelperExtensions.cs" />
     <Compile Include="Utility\Extensions\StringExtensions.cs" />
     <Compile Include="Utility\Extensions\TaskExtensions.cs" />
+    <Compile Include="Utility\LockingCollection\LockingDictionary.cs" />
+    <Compile Include="Utility\LockingCollection\LockingList.cs" />
+    <Compile Include="Utility\LockingCollection\LockingQueue.cs" />
     <Compile Include="Utility\Notification\DisposableBase.cs" />
     <Compile Include="Utility\Notification\History.cs" />
     <Compile Include="Utility\Notification\NotificationBase.cs" />
     <Compile Include="Utility\Tools\AsyncLock.cs" />
     <Compile Include="Utility\Tools\BinaryHelper.cs" />
+    <Compile Include="Utility\Tools\BuildTimeStamp.cs" />
     <Compile Include="Utility\Tools\Directions.cs" />
     <Compile Include="Utility\Tools\FileSizeConverter.cs" />
     <Compile Include="Utility\Tools\FolderWatcher.cs" />
@@ -105,6 +110,7 @@
     <Compile Include="Utility\Tools\ShellFileOperation.cs" />
     <Compile Include="Utility\Tools\TextLoader.cs" />
     <Compile Include="Utility\Tools\ThreeState.cs" />
+    <Compile Include="Utility\Tools\UnixTime.cs" />
     <Compile Include="Utility\Tools\WrappingStream .cs" />
     <Compile Include="Utility\Tools\XmlSettingManager.cs" />
   </ItemGroup>
