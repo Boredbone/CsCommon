@@ -13,7 +13,11 @@ namespace Boredbone.Utility.Tools
 
 
         public static long FromDateTime(DateTimeOffset time)
+#if NET45
+            => FromTicks(time.UtcDateTime.Ticks);
+#else
             => time.ToUnixTimeSeconds();
+#endif
 
         public static long FromDateTime(DateTime time)
             => FromTicks(time.ToUniversalTime().Ticks);
@@ -26,7 +30,11 @@ namespace Boredbone.Utility.Tools
 
 
         public static DateTimeOffset ToLocalDateTime(long time)
+#if NET45
+            => new DateTimeOffset(ToDateTime(time)).ToLocalTime();
+#else
             => DateTimeOffset.FromUnixTimeSeconds(time).ToLocalTime();
+#endif
 
         public static DateTime DefaultDateTimeUtc { get; } = ToDateTime(0);
         public static DateTimeOffset DefaultDateTimeOffsetLocal { get; } = ToLocalDateTime(0);

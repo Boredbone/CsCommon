@@ -97,6 +97,7 @@
     <Compile Include="Utility\Notification\NotificationBase.cs" />
     <Compile Include="Utility\Tools\AsyncLock.cs" />
     <Compile Include="Utility\Tools\BinaryHelper.cs" />
+    <Compile Include="Utility\Tools\BuildTimeStamp.cs" />
     <Compile Include="Utility\Tools\Directions.cs" />
     <Compile Include="Utility\Tools\FileSizeConverter.cs" />
     <Compile Include="Utility\Tools\FolderWatcher.cs" />
