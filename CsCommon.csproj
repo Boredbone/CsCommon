@@ -7,7 +7,7 @@
     <ProjectGuid>{84DAD39A-811D-4C38-9A03-99DAAF96F191}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CsCommon</RootNamespace>
+    <RootNamespace>Boredbone</RootNamespace>
     <AssemblyName>CsCommon</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -83,6 +83,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utility\Extensions\ConcurrentExtensions.cs" />
+    <Compile Include="Utility\Extensions\DateTimeExtensions.cs" />
     <Compile Include="Utility\Extensions\DictionaryExtensions.cs" />
     <Compile Include="Utility\Extensions\EnumelableExtensions.cs" />
     <Compile Include="Utility\Extensions\MathExtensions.cs" />
