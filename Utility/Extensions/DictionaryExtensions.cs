@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CsCommon.Utility.Extensions
+namespace Boredbone.Utility.Extensions
 {
     public static class DictionaryExtensions
     {

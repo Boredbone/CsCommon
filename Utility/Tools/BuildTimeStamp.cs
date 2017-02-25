@@ -34,7 +34,7 @@ namespace Boredbone.Utility.Tools
 
                 var currentSignatureIndex = 0;
 
-                for (int j = 0; j < 256; j++)
+                for (int j = 0; j < 512; j++)
                 {
                     var data = br.ReadByte();
 
