@@ -18,6 +18,7 @@ namespace Boredbone.Utility.Tools
         Wmf,
         Emf,
         Tiff,
+        Webp,
     }
 
     /// <summary>
@@ -123,6 +124,9 @@ namespace Boredbone.Utility.Tools
                 case 0x4D4D:
                     //TIFF-M:0x4D,0x4D
                     return this.GetTiffSize(stream, true, out size);
+                case 0x5249:
+                    //RIFF:0x52,0x49
+                    return this.GetWebpSize(stream, out size);
             }
             size = default(Size);
             return false;
@@ -473,6 +477,62 @@ namespace Boredbone.Utility.Tools
 
         }
 
+        private bool GetWebpSize(Stream stream, out Size size)
+        {
+            byte[] header = new byte[30];
+            stream.Read(header, 0, header.Length);
+
+            size = default;
+
+            if(header[6]!='W' || header[7]!='E' || header[8] != 'B' || header[9] != 'P'
+                 || header[10] != 'V' || header[11] != 'P' || header[12] != '8')
+            {
+                return false;
+            }
+            if (header[13] == 0x20)
+            {
+                if (header[21] != 0x9D || header[22] != 0x01 || header[23] != 0x2A)
+                {
+                    return false;
+                }
+                var w = BitConverter.ToUInt16(header, 24);
+                var h = BitConverter.ToUInt16(header, 26);
+
+                var width = w & 0x3fff;
+                var horiz_scale = w >> 14;
+                var height = h & 0x3fff;
+                var vert_scale = h >> 14;
+                size = new Size(width, height);
+            }
+            else if (header[13] == 'L')
+            {
+                if (header[18] != 0x2F)
+                {
+                    return false;
+                }
+                var ofst = 19;
+                var width = 1 + (((header[ofst+1] & 0x3F) << 8) | header[ofst + 0]);
+                var height = 1 + (((header[ofst + 3] & 0xF) << 10)
+                    | (header[ofst + 2] << 2) | ((header[ofst + 1] & 0xC0) >> 6));
+                size = new Size(width, height);
+            }
+            else if (header[13] == 'X')
+            {
+                var w = BitConverter.ToUInt16(header, 22);
+                var h = BitConverter.ToUInt16(header, 25);
+
+                var width = (w & 0xffffff) + 1;
+                var height = (h & 0xffffff) + 1;
+                size = new Size(width, height);
+            }
+            else
+            {
+                return false;
+            }
+
+            this.Type = GraphicFileType.Webp;
+            return true;
+        }
 
         /// <summary>
         /// ストリームの位置を設定
