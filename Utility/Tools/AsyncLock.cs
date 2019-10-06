@@ -3,61 +3,67 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
-using System.Diagnostics;
 
 namespace Boredbone.Utility
 {
     public sealed class AsyncLock
     {
-        private readonly object gate = new object();
-        private readonly SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
-        private readonly AsyncLocal<int> recursionCount = new AsyncLocal<int>();
+        private readonly SemaphoreSlim semaphore;
 
-        public Task<Releaser> LockAsync()
+        private readonly Task<IDisposable> releaser;
+        public bool IsLocked { get; private set; }
+
+
+        public AsyncLock(int semaphoreCount)
         {
-            var shouldAcquire = false;
-
-            lock (gate)
-            {
-                if (recursionCount.Value == 0)
-                {
-                    shouldAcquire = true;
-                    recursionCount.Value = 1;
-                }
-                else
-                {
-                    recursionCount.Value++;
-                }
-            }
-
-            if (shouldAcquire)
-            {
-                return semaphore.WaitAsync().ContinueWith(_ => new Releaser(this));
-            }
-
-            return Task.FromResult(new Releaser(this));
+            this.semaphore = new SemaphoreSlim(semaphoreCount, semaphoreCount);
+            this.IsLocked = false;
+            this.releaser = Task.FromResult((IDisposable)new Releaser(this));
         }
 
-        private void Release()
+        public AsyncLock() : this(1)
         {
-            lock (gate)
-            {
-                Debug.Assert(recursionCount.Value > 0);
+        }
 
-                if (--recursionCount.Value == 0)
+        public Task<IDisposable> LockAsync()
+        {
+            var wait = this.semaphore.WaitAsync();
+
+            if (wait.IsCompleted)
+            {
+                this.IsLocked = true;
+                return this.releaser;
+            }
+
+            return wait.ContinueWith(
+                (_, state) =>
                 {
-                    semaphore.Release();
-                }
+                    this.IsLocked = true;
+                    return (IDisposable)state;
+                },
+                this.releaser.Result,
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default
+                );
+        }
+
+
+        private sealed class Releaser : IDisposable
+        {
+            private readonly AsyncLock target;
+
+            internal Releaser(AsyncLock obj)
+            {
+                this.target = obj;
+            }
+
+            public void Dispose()
+            {
+                this.target.IsLocked = false;
+                this.target.semaphore.Release();
             }
         }
 
-        public struct Releaser : IDisposable
-        {
-            private readonly AsyncLock parent;
-
-            public Releaser(AsyncLock parent) => this.parent = parent;
-
-            public void Dispose() => parent.Release();
-        }
     }
 }
