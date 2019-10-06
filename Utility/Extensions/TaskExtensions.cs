@@ -30,7 +30,7 @@ namespace Boredbone.Utility.Extensions
         {
             return Task.WhenAll(tasks);
         }
-        
+
         /// <summary>
         /// Taskの完了を待機せず、例外発生時に投げる
         /// </summary>
@@ -138,6 +138,15 @@ namespace Boredbone.Utility.Extensions
 
                 return await Task.WhenAll(tasks.ToArray()).ConfigureAwait(configureAwait);
             }
+        }
+
+        public static Task WithCancellation(this Task task, CancellationToken token)
+        {
+            return task.ContinueWith(t => t.GetAwaiter().GetResult(), token);
+        }
+        public static Task<T> WithCancellation<T>(this Task<T> task, CancellationToken token)
+        {
+            return task.ContinueWith(t => t.GetAwaiter().GetResult(), token);
         }
     }
 
