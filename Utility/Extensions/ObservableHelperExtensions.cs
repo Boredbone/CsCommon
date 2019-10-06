@@ -179,22 +179,16 @@ namespace Boredbone.Utility.Extensions
         }
 
         public static IObservable<IList<T>> BufferUntilThrottle<T>
-            (this IObservable<T> source, double timeMilliseconds)
+            (this IObservable<T> source, TimeSpan time)
         {
-            return source.BufferUntilThrottle(timeMilliseconds, true);
+            return source.BufferUntilThrottle(time, true);
         }
         public static IObservable<IList<T>> BufferUntilThrottle<T>
-            (this IObservable<T> source, double timeMilliseconds, bool publish)
+            (this IObservable<T> source, TimeSpan time, bool publish)
         {
-            var observable = source;
-
-            if (publish)
-            {
-                observable = source.Publish().RefCount();
-            }
-            
+            var observable = publish ? source.Publish().RefCount() : source;
             return observable
-                .Buffer(observable.Throttle(TimeSpan.FromMilliseconds(timeMilliseconds)))
+                .Buffer(observable.Throttle(time))
                 .Where(x => x.Count > 0);
         }
 
