@@ -24,12 +24,12 @@ namespace Boredbone.Utility.Tools
     /// <summary>
     /// 画像ファイルのヘッダからサイズを読み取る
     /// </summary>
-    public class GraphicInformation
+    public readonly struct GraphicInformation
     {
-        public Size GraphicSize { get; private set; }
-        public long FileSize { get; private set; }
-        public GraphicFileType Type { get; private set; }
-        public int BlankHeaderLength { get; private set; }
+        public Size GraphicSize { get; }
+        public long FileSize { get; }
+        public GraphicFileType Type { get; }
+        public int BlankHeaderLength { get; }
 
         public bool IsMetaImage
             => (this.Type == GraphicFileType.Wmf || this.Type == GraphicFileType.Emf);
@@ -40,13 +40,23 @@ namespace Boredbone.Utility.Tools
         /// <param name="path"></param>
         public GraphicInformation(string path)
         {
-            var size = default(Size);
-
             using (var stream = File.OpenRead(path))
             {
-                if (this.CheckSizeMain(stream, out size))
+                var size = default(Size);
+                if (CheckSizeMain(stream, out size,
+                    out var fileSize, out var blankHeaderLength, out var graphicType))
                 {
                     this.GraphicSize = size;
+                    this.FileSize = fileSize;
+                    this.BlankHeaderLength = blankHeaderLength;
+                    this.Type = graphicType;
+                }
+                else
+                {
+                    this.GraphicSize = default;
+                    this.FileSize = default;
+                    this.BlankHeaderLength = default;
+                    this.Type = default;
                 }
             }
         }
@@ -58,10 +68,20 @@ namespace Boredbone.Utility.Tools
         public GraphicInformation(Stream stream)
         {
             var size = default(Size);
-
-            if (this.CheckSizeMain(stream, out size))
+            if (CheckSizeMain(stream, out size,
+                out var fileSize, out var blankHeaderLength, out var graphicType))
             {
                 this.GraphicSize = size;
+                this.FileSize = fileSize;
+                this.BlankHeaderLength = blankHeaderLength;
+                this.Type = graphicType;
+            }
+            else
+            {
+                this.GraphicSize = default;
+                this.FileSize = default;
+                this.BlankHeaderLength = default;
+                this.Type = default;
             }
         }
 
@@ -71,12 +91,14 @@ namespace Boredbone.Utility.Tools
         /// <param name="stream"></param>
         /// <param name="size"></param>
         /// <returns></returns>
-        private bool CheckSizeMain(Stream stream, out Size size)
+        private static bool CheckSizeMain(Stream stream, out Size size,
+            out long fileSize, out int blankHeaderLength, out GraphicFileType fileType)
         {
+            fileSize = stream.Length;
+            blankHeaderLength = 0;
+            fileType = GraphicFileType.Unknown;
 
-            this.FileSize = stream.Length;
-
-            if (this.FileSize < 16)
+            if (fileSize < 16)
             {
                 // too small
                 size = default(Size);
@@ -84,14 +106,14 @@ namespace Boredbone.Utility.Tools
             }
 
             var type = BinaryHelper.ReadInt16(stream, true);
-            this.BlankHeaderLength = 0;
+            blankHeaderLength = 0;
 
             //ブランクを読み飛ばし
             while (type == 0x0000
-                && this.BlankHeaderLength < 8)
+                && blankHeaderLength < 8)
             {
                 type = BinaryHelper.ReadInt16(stream, true);
-                this.BlankHeaderLength += 2;
+                blankHeaderLength += 2;
             }
 
             switch (type)
@@ -99,34 +121,34 @@ namespace Boredbone.Utility.Tools
 
                 case 0x424D:
                     //BMP: 0x42,0x4D_"BM"
-                    return this.GetBmpSize(stream, out size);
+                    return GetBmpSize(stream, out size, ref fileType, blankHeaderLength);
                 case 0xFFD8:
                     //JPG: 0xFF,0xD8
-                    return this.GetJpegSize(stream, out size);
+                    return GetJpegSize(stream, out size, ref fileType, blankHeaderLength);
                 case 0x4749:
                     //GIF: 0x47,0x49_"GI"
-                    return this.GetGifSize(stream, out size);
+                    return GetGifSize(stream, out size, ref fileType, blankHeaderLength);
                 case 0x8950:
                     //PNG: 0x89,0x50_'P'
-                    return this.GetPngSize(stream, out size);
+                    return GetPngSize(stream, out size, ref fileType, blankHeaderLength);
                 case 0x3842:
                     //PSD: 0x38,0x42_"8B"
-                    return this.GetPsdSize(stream, out size);
+                    return GetPsdSize(stream, out size, ref fileType, blankHeaderLength);
                 case 0xD7CD:
                     //WMF: 0xD7,0xCD
-                    return this.GetWmfSize(stream, out size);
+                    return GetWmfSize(stream, out size, ref fileType, blankHeaderLength);
                 case 0x0100:
                     //EMF: 0x01,0x00
-                    return this.GetEmfSize(stream, out size);
+                    return GetEmfSize(stream, out size, ref fileType, blankHeaderLength);
                 case 0x4949:
                     //TIFF-I:0x49,0x49
-                    return this.GetTiffSize(stream, false, out size);
+                    return GetTiffSize(stream, false, out size, ref fileType, blankHeaderLength);
                 case 0x4D4D:
                     //TIFF-M:0x4D,0x4D
-                    return this.GetTiffSize(stream, true, out size);
+                    return GetTiffSize(stream, true, out size, ref fileType, blankHeaderLength);
                 case 0x5249:
                     //RIFF:0x52,0x49
-                    return this.GetWebpSize(stream, out size);
+                    return GetWebpSize(stream, out size, ref fileType, blankHeaderLength);
             }
             size = default(Size);
             return false;
@@ -139,11 +161,11 @@ namespace Boredbone.Utility.Tools
         /// <param name="stream"></param>
         /// <param name="size"></param>
         /// <returns></returns>
-        private bool GetBmpSize(Stream stream, out Size size)
+        private static bool GetBmpSize(Stream stream, out Size size, ref GraphicFileType fileType, int blankHeaderLength)
         {
 
             var fileSize = BinaryHelper.ReadInt32(stream, false);//0x02
-            this.SetStreamPosition(stream, 0x0E);
+            SetStreamPosition(stream, 0x0E, blankHeaderLength);
             var infoSize = BinaryHelper.ReadInt32(stream, false);//0x0E
 
             if (infoSize < 12)
@@ -167,7 +189,7 @@ namespace Boredbone.Utility.Tools
                 var height = Math.Abs(BinaryHelper.ReadInt32(stream, false));
                 size = new Size(width, height);
             }
-            this.Type = GraphicFileType.Bmp;
+            fileType = GraphicFileType.Bmp;
             return true;
 
         }
@@ -178,7 +200,7 @@ namespace Boredbone.Utility.Tools
         /// <param name="stream"></param>
         /// <param name="size"></param>
         /// <returns></returns>
-        private bool GetJpegSize(Stream stream, out Size size)
+        private static bool GetJpegSize(Stream stream, out Size size, ref GraphicFileType fileType, int blankHeaderLength)
         {
             while (stream.Position < stream.Length)
             {
@@ -200,9 +222,9 @@ namespace Boredbone.Utility.Tools
 
                 var segmentLength = BinaryHelper.ReadInt16(stream, true);
 
-                var pos = this.GetStreamPosition(stream) + segmentLength - 2;
+                var pos = GetStreamPosition(stream, blankHeaderLength) + segmentLength - 2;
 
-                this.SetStreamPosition(stream, pos);
+                SetStreamPosition(stream, pos, blankHeaderLength);
                 if (pos + 4 >= stream.Length)
                 {
                     size = default(Size);
@@ -210,13 +232,13 @@ namespace Boredbone.Utility.Tools
                 }
             }
 
-            this.SetStreamPosition(stream, this.GetStreamPosition(stream) + 3);
+            SetStreamPosition(stream, GetStreamPosition(stream, blankHeaderLength) + 3, blankHeaderLength);
             var height = BinaryHelper.ReadInt16(stream, true);
             var width = BinaryHelper.ReadInt16(stream, true);
 
             size = new Size(width, height);
 
-            this.Type = GraphicFileType.Jpeg;
+            fileType = GraphicFileType.Jpeg;
             return true;
 
         }
@@ -227,7 +249,7 @@ namespace Boredbone.Utility.Tools
         /// <param name="stream"></param>
         /// <param name="size"></param>
         /// <returns></returns>
-        private bool GetGifSize(Stream stream, out Size size)
+        private static bool GetGifSize(Stream stream, out Size size, ref GraphicFileType fileType, int blankHeaderLength)
         {
             var type = new byte[4];
             stream.Read(type, 0, type.Length);//0x02
@@ -243,7 +265,7 @@ namespace Boredbone.Utility.Tools
             var height = BinaryHelper.ReadInt16(stream, false);
             size = new Size(width, height);
 
-            this.Type = GraphicFileType.Gif;
+            fileType = GraphicFileType.Gif;
             return true;
         }
 
@@ -254,7 +276,7 @@ namespace Boredbone.Utility.Tools
         /// <param name="stream"></param>
         /// <param name="size"></param>
         /// <returns></returns>
-        private bool GetPngSize(Stream stream, out Size size)
+        private static bool GetPngSize(Stream stream, out Size size, ref GraphicFileType fileType, int blankHeaderLength)
         {
             var type = new byte[6];
             stream.Read(type, 0, type.Length);//0x02
@@ -267,7 +289,7 @@ namespace Boredbone.Utility.Tools
                 return false;
             }
 
-            this.SetStreamPosition(stream, 0x0C);
+            SetStreamPosition(stream, 0x0C, blankHeaderLength);
 
             var ihdr = new byte[4];
             stream.Read(ihdr, 0, ihdr.Length);//0x0C
@@ -283,7 +305,7 @@ namespace Boredbone.Utility.Tools
             var height = BinaryHelper.ReadInt32(stream, true);
             size = new Size(width, height);
 
-            this.Type = GraphicFileType.Png;
+            fileType = GraphicFileType.Png;
             return true;
 
         }
@@ -294,7 +316,7 @@ namespace Boredbone.Utility.Tools
         /// <param name="stream"></param>
         /// <param name="size"></param>
         /// <returns></returns>
-        private bool GetPsdSize(Stream stream, out Size size)
+        private static bool GetPsdSize(Stream stream, out Size size, ref GraphicFileType fileType, int blankHeaderLength)
         {
             var type = new byte[4];
             stream.Read(type, 0, type.Length);//0x02
@@ -306,14 +328,14 @@ namespace Boredbone.Utility.Tools
                 return false;
             }
 
-            this.SetStreamPosition(stream, 0x0E);
+            SetStreamPosition(stream, 0x0E, blankHeaderLength);
 
             var height = BinaryHelper.ReadInt32(stream, true);
             var width = BinaryHelper.ReadInt32(stream, true);
 
             size = new Size(width, height);
 
-            this.Type = GraphicFileType.Psd;
+            fileType = GraphicFileType.Psd;
             return true;
         }
 
@@ -323,7 +345,7 @@ namespace Boredbone.Utility.Tools
         /// <param name="stream"></param>
         /// <param name="size"></param>
         /// <returns></returns>
-        private bool GetWmfSize(Stream stream, out Size size)
+        private static bool GetWmfSize(Stream stream, out Size size, ref GraphicFileType fileType, int blankHeaderLength)
         {
             var type = new byte[2];
             stream.Read(type, 0, type.Length);//0x02
@@ -334,7 +356,7 @@ namespace Boredbone.Utility.Tools
                 return false;
             }
 
-            this.SetStreamPosition(stream, 0x0A);
+            SetStreamPosition(stream, 0x0A, blankHeaderLength);
 
             var left = BinaryHelper.ReadInt16(stream, false);
             var top = BinaryHelper.ReadInt16(stream, false);
@@ -347,7 +369,7 @@ namespace Boredbone.Utility.Tools
 
             size = new Size(width, height);
 
-            this.Type = GraphicFileType.Wmf;
+            fileType = GraphicFileType.Wmf;
             return true;
         }
 
@@ -357,7 +379,7 @@ namespace Boredbone.Utility.Tools
         /// <param name="stream"></param>
         /// <param name="size"></param>
         /// <returns></returns>
-        private bool GetEmfSize(Stream stream, out Size size)
+        private static bool GetEmfSize(Stream stream, out Size size, ref GraphicFileType fileType, int blankHeaderLength)
         {
             var type = new byte[2];
             stream.Read(type, 0, type.Length);//0x02
@@ -368,7 +390,7 @@ namespace Boredbone.Utility.Tools
                 return false;
             }
 
-            this.SetStreamPosition(stream, 0x08);
+            SetStreamPosition(stream, 0x08, blankHeaderLength);
 
             var left = BinaryHelper.ReadInt32(stream, false);
             var top = BinaryHelper.ReadInt32(stream, false);
@@ -379,7 +401,7 @@ namespace Boredbone.Utility.Tools
             var height = Math.Abs(bottom - top) + 1;
 
 
-            this.SetStreamPosition(stream, 0x28);
+            SetStreamPosition(stream, 0x28, blankHeaderLength);
 
             var sign = new byte[4];
             stream.Read(sign, 0, sign.Length);//0x0C
@@ -393,7 +415,7 @@ namespace Boredbone.Utility.Tools
 
             size = new Size(width, height);
 
-            this.Type = GraphicFileType.Emf;
+            fileType = GraphicFileType.Emf;
             return true;
         }
 
@@ -404,7 +426,8 @@ namespace Boredbone.Utility.Tools
         /// <param name="isBigEndian"></param>
         /// <param name="size"></param>
         /// <returns></returns>
-        private bool GetTiffSize(Stream stream, bool isBigEndian, out Size size)
+        private static bool GetTiffSize(Stream stream, bool isBigEndian,
+            out Size size, ref GraphicFileType fileType, int blankHeaderLength)
         {
             var version = BinaryHelper.ReadInt16(stream, isBigEndian);
             if (version != 0x2A)
@@ -415,14 +438,14 @@ namespace Boredbone.Utility.Tools
 
             var offset = BinaryHelper.ReadInt32(stream, isBigEndian);
 
-            this.SetStreamPosition(stream, offset);
+            SetStreamPosition(stream, offset, blankHeaderLength);
 
             var entryCount = BinaryHelper.ReadInt16(stream, isBigEndian);
 
             int? width = null;
             int? height = null;
 
-            var position = this.GetStreamPosition(stream);
+            var position = GetStreamPosition(stream, blankHeaderLength);
 
             for (var i = 0; i < entryCount; i++)
             {
@@ -465,11 +488,11 @@ namespace Boredbone.Utility.Tools
                 if (width.HasValue && height.HasValue)
                 {
                     size = new Size(width.Value, height.Value);
-                    this.Type = GraphicFileType.Tiff;
+                    fileType = GraphicFileType.Tiff;
                     return true;
                 }
 
-                this.SetStreamPosition(stream, position + (i + 1) * 12);
+                SetStreamPosition(stream, position + (i + 1) * 12, blankHeaderLength);
             }
 
             size = default(Size);
@@ -477,14 +500,14 @@ namespace Boredbone.Utility.Tools
 
         }
 
-        private bool GetWebpSize(Stream stream, out Size size)
+        private static bool GetWebpSize(Stream stream, out Size size, ref GraphicFileType fileType, int blankHeaderLength)
         {
             byte[] header = new byte[30];
             stream.Read(header, 0, header.Length);
 
             size = default;
 
-            if(header[6]!='W' || header[7]!='E' || header[8] != 'B' || header[9] != 'P'
+            if (header[6] != 'W' || header[7] != 'E' || header[8] != 'B' || header[9] != 'P'
                  || header[10] != 'V' || header[11] != 'P' || header[12] != '8')
             {
                 return false;
@@ -511,7 +534,7 @@ namespace Boredbone.Utility.Tools
                     return false;
                 }
                 var ofst = 19;
-                var width = 1 + (((header[ofst+1] & 0x3F) << 8) | header[ofst + 0]);
+                var width = 1 + (((header[ofst + 1] & 0x3F) << 8) | header[ofst + 0]);
                 var height = 1 + (((header[ofst + 3] & 0xF) << 10)
                     | (header[ofst + 2] << 2) | ((header[ofst + 1] & 0xC0) >> 6));
                 size = new Size(width, height);
@@ -530,7 +553,7 @@ namespace Boredbone.Utility.Tools
                 return false;
             }
 
-            this.Type = GraphicFileType.Webp;
+            fileType = GraphicFileType.Webp;
             return true;
         }
 
@@ -539,14 +562,14 @@ namespace Boredbone.Utility.Tools
         /// </summary>
         /// <param name="stream"></param>
         /// <param name="position"></param>
-        private void SetStreamPosition(Stream stream, long position)
+        private static void SetStreamPosition(Stream stream, long position, int blankHeaderLength)
         {
-            stream.Position = position + this.BlankHeaderLength;
+            stream.Position = position + blankHeaderLength;
         }
 
-        private long GetStreamPosition(Stream stream)
+        private static long GetStreamPosition(Stream stream, int blankHeaderLength)
         {
-            return stream.Position - this.BlankHeaderLength;
+            return stream.Position - blankHeaderLength;
         }
     }
 
