@@ -35,10 +35,17 @@ namespace Boredbone.Utility.Extensions
         /// Taskの完了を待機せず、例外発生時に投げる
         /// </summary>
         /// <param name="task"></param>
-        public static void FireAndForget(this Task task)
+        public static void FireAndForget(this Task task,
+              [CallerMemberName] string memberName = "",
+              [CallerFilePath] string filePath = "",
+              [CallerLineNumber] int lineNumber = -1)
         {
             task.ContinueWith(x =>
             {
+#if DEBUG
+                System.Diagnostics.Debug.WriteLine($"{x.Exception?.InnerException?.Message}" +
+                    $"：{memberName}, {filePath}, {lineNumber}");
+#endif
                 throw x.Exception.InnerException;
             }, TaskContinuationOptions.OnlyOnFaulted);
         }
