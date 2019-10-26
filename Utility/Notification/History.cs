@@ -19,8 +19,8 @@ namespace Boredbone.Utility.Notification
         private ObservableCollection<T> BackHistory { get; }
         private ObservableCollection<T> ForwardHistory { get; }
 
-        public ReadOnlyReactiveProperty<int> BackHistoryCount { get; }
-        public ReadOnlyReactiveProperty<int> ForwardHistoryCount { get; }
+        public ReadOnlyReactivePropertySlim<int> BackHistoryCount { get; }
+        public ReadOnlyReactivePropertySlim<int> ForwardHistoryCount { get; }
 
         public Func<T, T, bool> EqualityChecker { get; set; }
 
@@ -37,14 +37,14 @@ namespace Boredbone.Utility.Notification
                 .CollectionChangedAsObservable()
                 .Select(x => this.BackHistory.Count)
                 .DistinctUntilChanged()
-                .ToReadOnlyReactiveProperty(0)
+                .ToReadOnlyReactivePropertySlim(0)
                 .AddTo(this.Disposables);
 
             this.ForwardHistoryCount = this.ForwardHistory
                 .CollectionChangedAsObservable()
                 .Select(x => this.ForwardHistory.Count)
                 .DistinctUntilChanged()
-                .ToReadOnlyReactiveProperty(0)
+                .ToReadOnlyReactivePropertySlim(0)
                 .AddTo(this.Disposables);
         }
 
