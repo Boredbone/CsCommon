@@ -44,7 +44,9 @@ namespace Boredbone.Utility.Extensions
             {
 #if DEBUG
                 System.Diagnostics.Debug.WriteLine($"{x.Exception?.InnerException?.Message}" +
-                    $"：{memberName}, {filePath}, {lineNumber}");
+                    $":{filePath}, {lineNumber}, {memberName}");
+                System.IO.File.AppendAllText("log.txt", $"{DateTimeOffset.Now}\n{x.Exception?.InnerException}\n" +
+                    $":{filePath}, {lineNumber}, {memberName}\n\n");
 #endif
                 throw x.Exception.InnerException;
             }, TaskContinuationOptions.OnlyOnFaulted);
@@ -55,11 +57,20 @@ namespace Boredbone.Utility.Extensions
         /// </summary>
         /// <param name="task"></param>
         /// <param name="onFaulted"></param>
-        public static void FireAndForget(this Task task, Action<AggregateException> onFaulted)
+        public static void FireAndForget(this Task task, Action<AggregateException> onFaulted,
+              [CallerMemberName] string memberName = "",
+              [CallerFilePath] string filePath = "",
+              [CallerLineNumber] int lineNumber = -1)
         {
             task.ContinueWith(x =>
             {
                 onFaulted?.Invoke(x.Exception);
+#if DEBUG
+                System.Diagnostics.Debug.WriteLine($"{x.Exception?.InnerException?.Message}" +
+                    $":{filePath}, {lineNumber}, {memberName}");
+                System.IO.File.AppendAllText("log.txt", $"{DateTimeOffset.Now}\n{x.Exception?.InnerException}\n" +
+                    $":{filePath}, {lineNumber}, {memberName}\n\n");
+#endif
                 throw x.Exception.InnerException;
             }, TaskContinuationOptions.OnlyOnFaulted);
         }
