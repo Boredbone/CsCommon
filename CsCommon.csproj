@@ -12,8 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ReactiveProperty" Version="8.0.3" />
-    <PackageReference Include="System.Interactive" Version="5.1.0" />
+    <PackageReference Include="ReactiveProperty" Version="9.0.0" />
+    <PackageReference Include="System.Interactive" Version="6.0.1" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
 
