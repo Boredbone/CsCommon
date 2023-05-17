@@ -161,6 +161,12 @@ namespace Boredbone.Utility.Extensions
             target.Value = newValue;
             return newValue;
         }
+        public static bool Toggle(this ReactivePropertySlim<bool> target)
+        {
+            var newValue = !target.Value;
+            target.Value = newValue;
+            return newValue;
+        }
 
         public static IObservable<T> SkipAfter<T, V>(this IObservable<T> source, IObservable<V> trigger, int count)
         {

@@ -12,7 +12,7 @@ namespace Boredbone.Utility.Notification
     public class History<T> : DisposableBase
     {
 
-        private ReactiveProperty<T> CurrentState { get; }
+        private ReactivePropertySlim<T> CurrentState { get; }
         public IObservable<T> StateChanged => this.CurrentState.AsObservable();
         public T Current => this.CurrentState.Value;
 
@@ -31,7 +31,7 @@ namespace Boredbone.Utility.Notification
             this.BackHistory = new ObservableCollection<T>();
             this.ForwardHistory = new ObservableCollection<T>();
 
-            this.CurrentState = new ReactiveProperty<T>(initialValue).AddTo(this.Disposables);
+            this.CurrentState = new ReactivePropertySlim<T>(initialValue).AddTo(this.Disposables);
 
             this.BackHistoryCount = this.BackHistory
                 .CollectionChangedAsObservable()
