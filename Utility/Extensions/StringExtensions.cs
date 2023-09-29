@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -44,15 +45,15 @@ namespace Boredbone.Utility.Extensions
             return string.Join("", list);
         }
 
-        public static bool IsNullOrEmpty(this string text)
+        public static bool IsNullOrEmpty([NotNullWhen(false)] this string? text)
         {
             return string.IsNullOrEmpty(text);
         }
-        public static bool IsNullOrWhiteSpace(this string text)
+        public static bool IsNullOrWhiteSpace([NotNullWhen(false)] this string? text)
         {
             return string.IsNullOrWhiteSpace(text);
         }
-        public static bool HasText(this string text)
+        public static bool HasText([NotNullWhen(true)] this string? text)
         {
             return !string.IsNullOrWhiteSpace(text);
         }
