@@ -164,6 +164,9 @@ namespace Boredbone.Utility.Tools
                 if (Encoding.ASCII.GetString(buffer, 0, buffer.Length) == "ftypavif")
                 {
                     //AVIF
+                    blankHeaderLength -= 2;
+                    if(blankHeaderLength < 0) { blankHeaderLength = 0; }
+
                     return GetAvifSize(stream, out size, ref fileType, blankHeaderLength, boxSize);
                 }
             }

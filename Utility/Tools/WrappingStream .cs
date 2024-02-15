@@ -208,7 +208,7 @@ namespace Boredbone.Utility
             // doesn't close the base stream, but just prevents access to it through this WrappingStream
             if (disposing)
             {
-                m_streamBase.Dispose();
+                m_streamBase?.Dispose();
                 m_streamBase = null;  //disposeしたら内部ストリームをnullにして参照を外す
             }
 
@@ -222,6 +222,6 @@ namespace Boredbone.Utility
                 throw new ObjectDisposedException(GetType().Name);
         }
 
-        Stream m_streamBase;
+        Stream? m_streamBase;
     }
 }
