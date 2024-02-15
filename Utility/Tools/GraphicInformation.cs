@@ -19,6 +19,7 @@ namespace Boredbone.Utility.Tools
         Emf,
         Tiff,
         Webp,
+        Avif,
     }
 
     /// <summary>
@@ -150,6 +151,23 @@ namespace Boredbone.Utility.Tools
                     //RIFF:0x52,0x49
                     return GetWebpSize(stream, out size, ref fileType, blankHeaderLength);
             }
+
+            int boxSize = type;
+            if (blankHeaderLength == 0)
+            {
+                boxSize = (boxSize << 16) + BinaryHelper.ReadInt16(stream, true);
+            }
+            if (boxSize >= 8)
+            {
+                var buffer = new byte[8];
+                stream.Read(buffer, 0, buffer.Length);
+                if (Encoding.ASCII.GetString(buffer, 0, buffer.Length) == "ftypavif")
+                {
+                    //AVIF
+                    return GetAvifSize(stream, out size, ref fileType, blankHeaderLength, boxSize);
+                }
+            }
+
             size = default(Size);
             return false;
         }
@@ -555,6 +573,61 @@ namespace Boredbone.Utility.Tools
 
             fileType = GraphicFileType.Webp;
             return true;
+        }
+
+        private static bool GetAvifSize(
+            Stream stream, out Size size, ref GraphicFileType fileType, int blankHeaderLength,
+            int ftypBoxLength)
+        {
+            // https://nokiatech.github.io/heif/technical.html
+
+            (int boxSize, string id) ReadBoxHeader()
+            {
+                var boxSize = BinaryHelper.ReadInt32(stream, true);
+
+                var buf = new byte[4];
+                stream.Read(buf, 0, buf.Length);
+                var id = Encoding.ASCII.GetString(buf, 0, buf.Length);
+                return (boxSize, id);
+            }
+            size = default;
+            stream.Position += (ftypBoxLength - 12);
+
+            while (stream.Position < stream.Length)
+            {
+                var box = ReadBoxHeader();
+                //Console.WriteLine($"box [{box.id}] {box.boxSize}bytes");
+                if (box.id == "meta")
+                {
+                    stream.Position += 4;
+                    continue;
+                }
+                else if (box.id == "iprp")
+                {
+                    continue;
+                }
+                else if (box.id == "ipco")
+                {
+                    continue;
+                }
+                else if (box.id == "ispe")
+                {
+                    stream.Position += 4;
+
+                    var w = BinaryHelper.ReadInt32(stream, true);
+                    var h = BinaryHelper.ReadInt32(stream, true);
+
+                    if (w > 0 && h > 0)
+                    {
+                        size = new Size(w, h);
+                    }
+                    break;
+                }
+                stream.Position += (box.boxSize - 8);
+            }
+
+            fileType = GraphicFileType.Avif;
+            return (size.Width > 0 && size.Height > 0);
         }
 
         /// <summary>
